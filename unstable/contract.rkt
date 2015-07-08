@@ -1,6 +1,7 @@
 #lang racket/base
 (require racket/contract/base
          racket/contract/combinator
+         racket/match
          racket/sequence)
 
 (define path-piece?
@@ -119,6 +120,16 @@
           #:first-order option/c-first-order
           #:projection option/c-projection
           #:stronger option/c-stronger?))
+
+;; Added by Alex Knauth
+
+;; list*/c : Contract ... -> Contract
+(define (list*/c c1 . rst)
+  (match-define (cons rst/c rev-cs) (reverse (cons c1 rst)))
+  (rename-contract
+   (for/fold ([rst/c rst/c]) ([c (in-list rev-cs)])
+     (cons/c c rst/c))
+   `(list*/c ,@(map contract-name (cons c1 rst)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
